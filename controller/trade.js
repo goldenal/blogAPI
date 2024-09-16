@@ -4,6 +4,16 @@ const API_TOKEN = '6qgA57lTScuQ5me';
 const API_URL = 'wss://ws.binaryws.com/websockets/v3?app_id=64155';
 const instruments = ['R_10', 'R_25', 'R_50', 'R_75', 'R_100'];
 
+// Generic utility to manage WebSocket listeners
+function manageListeners(ws, event, listener, action = 'add') {
+    if (action === 'add') {
+        ws.on(event, listener);
+    } else if (action === 'remove') {
+        ws.removeListener(event, listener);
+    }
+}
+
+
 // Function to check if the trade is won or lost
 function checkTradeOutcome(ws, contract_id, res) {
     const checkRequest = {
@@ -11,16 +21,19 @@ function checkTradeOutcome(ws, contract_id, res) {
         contract_id: contract_id
     };
 
-    sendRequest(ws, checkRequest);
 
-    ws.on('message', function incoming(data) {
+
+    const listener = (data) => {
         const response = JSON.parse(data);
 
-        if (response.msg_type === 'proposal_open_contract') {
 
+
+        if (response.msg_type === 'proposal_open_contract') {
             console.log('<><<<>> ' + JSON.stringify(response, null, 2));
+
             if (response["proposal_open_contract"]["status"] === 'open') {
-                console.log('Contract still open. Checking again in 5 seconds...');
+                console.log('Contract still open. Checking again in 5sec  ...');
+                manageListeners(ws, 'message', listener, 'remove');
                 setTimeout(() => checkTradeOutcome(ws, contract_id, res), 5000); // Check again after 5 seconds
 
             } else {
@@ -31,22 +44,26 @@ function checkTradeOutcome(ws, contract_id, res) {
                     console.log('lost');
                     // res.send('Trade LOST! Loss: ' + contract?.profit);
                 }
+
+                // Remove the listener after contract is closed
+                manageListeners(ws, 'message', listener, 'remove');
                 ws.close();
 
             }
 
         }
-    });
+
+
+    };
+
+    // Add the listener dynamically and send the request
+    manageListeners(ws, 'message', listener);
+    sendRequest(ws, checkRequest);
+
+
 }
 
-// Generic utility to manage WebSocket listeners
-function manageListeners(ws, event, listener, action = 'add') {
-    if (action === 'add') {
-      ws.on(event, listener);
-    } else if (action === 'remove') {
-      ws.removeListener(event, listener);
-    }
-  }
+
 
 // Utility function to send JSON data via WebSocket
 function sendRequest(ws, data) {
