@@ -1,10 +1,18 @@
 {
-  "name": "blog",
+  "name": "trading",
   "version": "1.0.0",
   "description": "starter",
+  "engines": {
+    "node": "18"
+  },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
   },
   "author": "",
   "license": "ISC",
@@ -12,6 +20,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.20.0",
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^6.0.1",
     "mongoose": "^8.6.1",
     "mongoose-sequence": "^6.0.1",
     "websocket": "^1.0.35",
