@@ -100,8 +100,9 @@ function executeTradeAtNewCandle(ws, symbol, type, res) {
                     if (response.msg_type === 'tick') {
                         const tickTime = new Date(response.tick.epoch * 1000);
                         const seconds = tickTime.getSeconds();
+                        console.log('New ca:', seconds);
                         // Check if it's the start of a new minute (seconds == 0 means a new candle)
-                        if (seconds === 0) {
+                        if (seconds === 58) {
                             console.log('New candle started at:', tickTime);
 
                             // Cancel the tick subscription after detecting new candle

@@ -3,8 +3,9 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const connectDB = require('./config/db_connection');
+const functions = require("firebase-functions");
 
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 // Connect to MongoDB
 //connectDB();
@@ -33,6 +34,8 @@ app.use('/trade', require('./routes/trading_route'));
 //     console.log('Connected to MongoDB');
 
 
-// });
+// });;
 app.listen(port, () => console.log(`Server running on port ${port}`));
 
+//module.exports = app;  for vercel deployment
+exports.api = functions.https.onRequest(app);
