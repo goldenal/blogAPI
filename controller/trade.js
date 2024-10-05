@@ -43,7 +43,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
                 console.log(parseFloat(response["proposal_open_contract"]["profit"]) > 0);
 
                 if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
-                    if ((wins + 1) < 2) {
+                    if ((wins + 1) < 3) {
                         console.log('Contract won, printing more');
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, initialStake, res, step + 1, wins + 1, 0, initialStake);
@@ -129,7 +129,7 @@ function sendRequest(ws, data) {
 
 
 // Function to create the trade request for Up/Down options
-function executeTradeAtNewCandle(ws, symbol, type, res, amt) {
+function executeTradeAtNewCandle(ws, symbol, type, res, amt, mode) {
     const request = {
         authorize: API_TOKEN
     };
@@ -144,44 +144,48 @@ function executeTradeAtNewCandle(ws, symbol, type, res, amt) {
 
             // Check if authorization is successful
             if (response.msg_type === 'authorize') {
-                console.log(`Waiting for new candle to place ${type} trade on ${symbol}...`);
-                // Subscribe to tick stream for the given symbol
-                const subscribeRequest = {
-                    ticks: symbol,
-                    subscribe: 1
-                };
+
+                if (mode == "instant") {
+                    placeMartingaleTrade(ws, symbol, type, amt, res, 1, 0, 0, amt);
+                } else {
+                    console.log(`Waiting for new candle to place ${type} trade on ${symbol}...`);
+                    // Subscribe to tick stream for the given symbol
+                    const subscribeRequest = {
+                        ticks: symbol,
+                        subscribe: 1
+                    };
 
 
-                const tickStreamTheFirst = (data) => {
-                    const response = JSON.parse(data);
-                    if (response.msg_type === 'tick') {
-                        // console.log(JSON.stringify(response));
-                        const tickTime = new Date(response.tick.epoch * 1000);
-                        const seconds = tickTime.getSeconds();
-                        console.log('New ca:first trade', seconds);
-                        // Check if it's the start of a new minute (seconds == 0 means a new candle)
-                        if (seconds === 58) {
-                            console.log('New candle started at:first trade', tickTime);
+                    const tickStreamTheFirst = (data) => {
+                        const response = JSON.parse(data);
+                        if (response.msg_type === 'tick') {
+                            // console.log(JSON.stringify(response));
+                            const tickTime = new Date(response.tick.epoch * 1000);
+                            const seconds = tickTime.getSeconds();
+                            console.log('New ca:first trade', seconds);
+                            // Check if it's the start of a new minute (seconds == 0 means a new candle)
+                            if (seconds === 58) {
+                                console.log('New candle started at:first trade', tickTime);
 
-                            // Cancel the tick subscription after detecting new candle
-                            const unsubscribeRequest = {
-                                forget_all: 'ticks'
-                            };
-                            sendRequest(ws, unsubscribeRequest);
-                            manageListeners(ws, 'message', tickStreamTheFirst, 'remove');
+                                // Cancel the tick subscription after detecting new candle
+                                const unsubscribeRequest = {
+                                    forget_all: 'ticks'
+                                };
+                                sendRequest(ws, unsubscribeRequest);
+                                manageListeners(ws, 'message', tickStreamTheFirst, 'remove');
 
-                            placeMartingaleTrade(ws, symbol, type, amt, res, 1, 0, 0, amt);
+                                placeMartingaleTrade(ws, symbol, type, amt, res, 1, 0, 0, amt);
 
-                            // Build a trade request after authorization
+                                // Build a trade request after authorization
 
+                            }
                         }
-                    }
-                };
+                    };
 
-                //subscribe and listen to tick the first time
-                manageListeners(ws, 'message', tickStreamTheFirst);
-                sendRequest(ws, subscribeRequest);
-
+                    //subscribe and listen to tick the first time
+                    manageListeners(ws, 'message', tickStreamTheFirst);
+                    sendRequest(ws, subscribeRequest);
+                }
 
 
 
@@ -244,13 +248,16 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
 
 const placeTrade = async (req, res) => {
 
-    const { symbol, type,startingAmount } = req.params;
+    const { symbol, type, startingAmount, mode } = req.params;
 
-    
+
     if (!instruments.includes(symbol)) {
         return res.status(400).send('Invalid symbol');
     }
-   
+    if (mode != 'watch' && mode != 'instant') {
+        return res.status(400).send('Invalid mode, use watch or instant');
+    }
+
 
     if (type !== 'CALL' && type !== 'PUT') {
         return res.status(400).send('Invalid option type. Use CALL for Up, PUT for Down.');
@@ -258,7 +265,7 @@ const placeTrade = async (req, res) => {
 
     const ws = new WebSocket(API_URL);
     // Make a trading option based on the requested type
-    executeTradeAtNewCandle(ws, symbol, type, res, startingAmount);
+    executeTradeAtNewCandle(ws, symbol, type, res, startingAmount, mode);
 
     res.send(`Placing a ${type} trade on ${symbol}`);
 }
