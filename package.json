@@ -24,6 +24,7 @@
     "firebase-functions": "^6.0.1",
     "mongoose": "^8.6.1",
     "mongoose-sequence": "^6.0.1",
+    "newrelic": "^12.5.1",
     "websocket": "^1.0.35",
     "ws": "^8.18.0"
   },
