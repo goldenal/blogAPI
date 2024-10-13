@@ -57,7 +57,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
                 } else {
                     var lossingStreak = loss + 1;
-                    if ((lossingStreak) < 2) {
+                    if ((lossingStreak) < 3) {
                         console.log('Contract loss, recouping');
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, stake * 2, res, step + 1, wins, lossingStreak, initialStake);
