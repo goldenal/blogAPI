@@ -43,7 +43,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
                 console.log(parseFloat(response["proposal_open_contract"]["profit"]) > 0);
 
                 if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
-                    if ((wins + 1) < 3) {
+                    if ((wins + 1) < 1) {
                         console.log('Contract won, printing more');
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, initialStake, res, step + 1, wins + 1, 0, initialStake);
@@ -146,7 +146,9 @@ function executeTradeAtNewCandle(ws, symbol, type, res, amt, mode) {
             if (response.msg_type === 'authorize') {
 
                 if (mode == "instant") {
+
                     placeMartingaleTrade(ws, symbol, type, amt, res, 1, 0, 0, amt);
+
                 } else {
                     console.log(`Waiting for new candle to place ${type} trade on ${symbol}...`);
                     // Subscribe to tick stream for the given symbol
@@ -267,10 +269,11 @@ const placeTrade = async (req, res) => {
     // Make a trading option based on the requested type
     executeTradeAtNewCandle(ws, symbol, type, res, startingAmount, mode);
 
-    res.send(`Placing a ${type} trade on ${symbol}`);
+    //  
 }
 
 module.exports = {
     placeTrade
 
 }
+
