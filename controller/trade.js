@@ -237,8 +237,11 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
             console.log('Trade placed successfully. Contract ID:', contract_id);
 
             // After placing the trade, start checking for the outcome
-            checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
-            manageListeners(ws, 'message', handleTradeResponse, 'remove');
+            setTimeout(() => {
+                checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
+                manageListeners(ws, 'message', handleTradeResponse, 'remove');
+            }, 3000);
+
         }
     };
 
