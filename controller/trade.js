@@ -88,10 +88,14 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
         if (response.msg_type === 'tick') {
             const tickTime = new Date(response.tick.epoch * 1000);
             const seconds = tickTime.getSeconds();
-            console.log('New stream:', seconds);
+            const minutes = tickTime.getMinutes();
+            const rem = minutes % 5;
+
+            //  console.log('Tracking stream seconds:' + symbol, seconds);
             // Check if it's the start of a new minute (seconds == 0 means a new candle)
-            if (seconds === 58) {
-                console.log('New candle started at:', tickTime);
+            if (seconds === 0 && rem === 0) {
+                console.log(`Tracking ${symbol}, new candle at ${tickTime}`);
+
 
                 // Cancel the tick subscription after detecting new candle
                 const unsubscribeRequest = {
@@ -164,9 +168,11 @@ function executeTradeAtNewCandle(ws, symbol, type, res, amt, mode) {
                             // console.log(JSON.stringify(response));
                             const tickTime = new Date(response.tick.epoch * 1000);
                             const seconds = tickTime.getSeconds();
+                            const minutes = tickTime.getMinutes();
+                            const rem = minutes % 5;
                             console.log('New ca:first trade', seconds);
                             // Check if it's the start of a new minute (seconds == 0 means a new candle)
-                            if (seconds === 58) {
+                            if (seconds === 0 && rem === 0) {
                                 console.log('New candle started at:first trade', tickTime);
 
                                 // Cancel the tick subscription after detecting new candle
@@ -222,7 +228,7 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
             basis: 'stake',
             contract_type: type, // 'CALL' for Up, 'PUT' for Down
             currency: 'USD',
-            duration: 1,
+            duration: 5,
             duration_unit: 'm',
             symbol: symbol
         }
@@ -272,7 +278,7 @@ const placeTrade = async (req, res) => {
     // Make a trading option based on the requested type
     executeTradeAtNewCandle(ws, symbol, type, res, startingAmount, mode);
 
-    //  
+    res.send(`Order of type ${type} reccieved on ${symbol} with mode ${mode}`);
 }
 
 module.exports = {
