@@ -29,10 +29,10 @@ const convertFile = async (req, res) => {
                     const formattedRows = results.map((row) => {
 
                         return `{
-          "id": ${row[0]},
-          "name": "${row[1]}",
-          "address": "${row[2]}",
-          "country": "${row[3]}"
+          id: ${row[0]},
+          name: "${row[1]}",
+          address: "${row[2]}",
+          country: "${row[3]}"
         }`;
                     });
 
@@ -64,64 +64,64 @@ const convertFile = async (req, res) => {
         });
 
 
-    // Function to read CSV file and return promise with parsed data
-    // function readCSV(filePath, headers = true) {
-    //     return new Promise((resolve, reject) => {
-    //         const results = [];
-    //         fs.createReadStream(filePath)
-    //             .pipe(parse({
-    //                 columns: headers,
-    //                 skip_empty_lines: true,
-    //                 trim: true
-    //             }))
-    //             .on('data', (data) => results.push(data))
-    //             .on('end', () => resolve(results))
-    //             .on('error', reject);
-    //     });
-    // }
-
-    // async function compareUniversities() {
-    //     try {
-    //         // Read both CSV files
-    //         const csv1Data = await readCSV('schools.csv');
-    //         const csv2Data = await readCSV('ne.csv');
-
-    //         // Get all university names from csv1 (converted to lowercase for case-insensitive comparison)
-    //         const universities1 = new Set(
-    //             csv1Data.map(row => row.name.toLowerCase())
-    //         );
-
-    //         // Filter universities from csv2 that don't exist in csv1
-    //         const uniqueUniversities = csv2Data
-    //             .filter(row => row.University && row.University.trim()) // Remove empty entries
-    //             .filter(row => !universities1.has(row.University.toLowerCase()))
-    //             .map(row => ({ University: row.University.trim() }));
-
-    //         // Write results to new file
-    //         fs.writeFileSync(
-    //             'newfile.csv',
-    //             await new Promise((resolve, reject) => {
-    //                 stringify(uniqueUniversities, {
-    //                     header: true,
-    //                     columns: ['University']
-    //                 }, (err, output) => {
-    //                     if (err) reject(err);
-    //                     else resolve(output);
-    //                 });
-    //             })
-    //         );
-
-    //         console.log(`Found ${uniqueUniversities.length} universities in csv2 that don't exist in csv1`);
-    //         console.log("Results have been saved to 'newfile.csv'");
-
-    //     } catch (error) {
-    //         console.error('Error processing CSV files:', error.message);
+    //    // Function to read CSV file and return promise with parsed data
+    //     function readCSV(filePath, headers = true) {
+    //         return new Promise((resolve, reject) => {
+    //             const results = [];
+    //             fs.createReadStream(filePath)
+    //                 .pipe(parse({
+    //                     columns: headers,
+    //                     skip_empty_lines: true,
+    //                     trim: true
+    //                 }))
+    //                 .on('data', (data) => results.push(data))
+    //                 .on('end', () => resolve(results))
+    //                 .on('error', reject);
+    //         });
     //     }
-    // }
+
+    //     async function compareUniversities() {
+    //         try {
+    //             // Read both CSV files
+    //             const csv1Data = await readCSV('schools.csv');
+    //             const csv2Data = await readCSV('ne.csv');
+
+    //             // Get all university names from csv1 (converted to lowercase for case-insensitive comparison)
+    //             const universities1 = new Set(
+    //                 csv1Data.map(row => row.name.toLowerCase())
+    //             );
+
+    //             // Filter universities from csv2 that don't exist in csv1
+    //             const uniqueUniversities = csv2Data
+    //                 .filter(row => row.University && row.University.trim()) // Remove empty entries
+    //                 .filter(row => !universities1.has(row.University.toLowerCase()))
+    //                 .map(row => ({ University: row.University.trim() }));
+
+    //             // Write results to new file
+    //             fs.writeFileSync(
+    //                 'newfile.csv',
+    //                 await new Promise((resolve, reject) => {
+    //                     stringify(uniqueUniversities, {
+    //                         header: true,
+    //                         columns: ['University']
+    //                     }, (err, output) => {
+    //                         if (err) reject(err);
+    //                         else resolve(output);
+    //                     });
+    //                 })
+    //             );
+
+    //             console.log(`Found ${uniqueUniversities.length} universities in csv2 that don't exist in csv1`);
+    //             console.log("Results have been saved to 'newfile.csv'");
+
+    //         } catch (error) {
+    //             console.error('Error processing CSV files:', error.message);
+    //         }
+    //     }
 
 
 
-    // compareUniversities();
+    //      compareUniversities();
 
 
 
