@@ -1,5 +1,5 @@
 const WebSocket = require('ws');
-require('newrelic');
+
 
 const API_TOKEN = '6qgA57lTScuQ5me';
 const API_URL = 'wss://ws.binaryws.com/websockets/v3?app_id=64155';
@@ -89,11 +89,11 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
             const tickTime = new Date(response.tick.epoch * 1000);
             const seconds = tickTime.getSeconds();
             const minutes = tickTime.getMinutes();
-            const rem = minutes % 5;
+            const rem = (minutes + 1) % 5;
 
             //  console.log('Tracking stream seconds:' + symbol, seconds);
             // Check if it's the start of a new minute (seconds == 0 means a new candle)
-            if (seconds === 0 && rem === 0) {
+            if (seconds === 58 && rem === 0) {
                 console.log(`Tracking ${symbol}, new candle at ${tickTime}`);
 
 
