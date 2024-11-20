@@ -1,7 +1,8 @@
 const WebSocket = require('ws');
 
 
-const API_TOKEN = '6qgA57lTScuQ5me';
+//const API_TOKEN = '6qgA57lTScuQ5me';
+const API_TOKEN = 't2xQXkeeUW0IFEf'
 const API_URL = 'wss://ws.binaryws.com/websockets/v3?app_id=64155';
 const instruments = ['R_10', 'R_25', 'R_50', 'R_75', 'R_100'];
 
@@ -57,10 +58,10 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
                 } else {
                     var lossingStreak = loss + 1;
-                    if ((lossingStreak) < 3) {
+                    if ((lossingStreak) < 2) {
                         console.log('Contract loss, recouping');
                         manageListeners(ws, 'message', listener, 'remove');
-                        placeMartingaleTrade(ws, symbol, type, stake, res, step + 1, wins, lossingStreak, initialStake);
+                        placeMartingaleTrade(ws, symbol, type, stake * 2, res, step + 1, wins, lossingStreak, initialStake);
                         manageListeners(ws, 'message', tickStreamlistener, 'remove');
                     } else {
                         ws.close();
