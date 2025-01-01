@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 
 
 //const API_TOKEN = '6qgA57lTScuQ5me';
-const API_TOKEN = 't2xQXkeeUW0IFEf'
+const API_TOKEN = '6qgA57lTScuQ5me';    //              't2xQXkeeUW0IFEf'
 const API_URL = 'wss://ws.binaryws.com/websockets/v3?app_id=64155';
 const instruments = ['R_10', 'R_25', 'R_50', 'R_75', 'R_100'];
 
@@ -16,9 +16,12 @@ function manageListeners(ws, event, listener, action = 'add') {
 }
 
 
+
+
 // Function to check if the trade is won or lost
 function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake) {
-
+    let standardWin = 5;
+    let standardLoss = 4;
     const checkRequest = {
         proposal_open_contract: 1,
         contract_id: contract_id
@@ -42,14 +45,14 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
             if (isSold != 1) {
                 //  console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]["is_sold"]));
                 console.log(parseFloat(response["proposal_open_contract"]["profit"]) > 0);
-
                 if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
-                    if ((wins + 1) < 1) {
+                    if ((wins + 1) < 5) {
                         console.log('Contract won, printing more');
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, initialStake, res, step + 1, wins + 1, 0, initialStake);
                         manageListeners(ws, 'message', tickStreamlistener, 'remove');
                     } else {
+                        console.log("closed after max win<>");
                         ws.close();
                     }
 
@@ -58,20 +61,61 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
                 } else {
                     var lossingStreak = loss + 1;
-                    if ((lossingStreak) < 2) {
+                    if ((lossingStreak) < 4) {
                         console.log('Contract loss, recouping');
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, stake * 2, res, step + 1, wins, lossingStreak, initialStake);
                         manageListeners(ws, 'message', tickStreamlistener, 'remove');
                     } else {
+                        console.log("closed after max loss<>");
                         ws.close();
                     }
 
 
                 }
+
+
             }
             else {
-                ws.close();
+                console.log("isSold Section<<<>>>");
+               
+                if (response["proposal_open_contract"]["expiry_time"] === response["proposal_open_contract"]["exit_tick_time"]) {
+                    if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
+                        if ((wins + 1) < 5) {
+                            console.log('Contract won, printing more');
+                            manageListeners(ws, 'message', listener, 'remove');
+                            placeMartingaleTrade(ws, symbol, type, initialStake, res, step + 1, wins + 1, 0, initialStake);
+                            manageListeners(ws, 'message', tickStreamlistener, 'remove');
+                        } else {
+                            console.log("closed after max win<>");
+                            ws.close();
+                        }
+
+
+
+
+                    } else {
+                        var lossingStreak = loss + 1;
+                        if ((lossingStreak) < 4) {
+                            console.log('Contract loss, recouping');
+                            manageListeners(ws, 'message', listener, 'remove');
+                            placeMartingaleTrade(ws, symbol, type, stake * 2, res, step + 1, wins, lossingStreak, initialStake);
+                            manageListeners(ws, 'message', tickStreamlistener, 'remove');
+                        } else {
+                            console.log("closed after max loss<>");
+                            ws.close();
+                        }
+
+
+                    }
+
+                } else {
+                    console.log("sold<>");
+                    ws.close();
+                }
+
+
+
             }
 
 
@@ -81,6 +125,8 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
 
     };
+
+
 
 
     const tickStreamlistener = (data) => {
@@ -219,7 +265,7 @@ function executeTradeAtNewCandle(ws, symbol, type, res, amt, mode) {
 
 // Function to place a Martingale trade
 function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, initialStake) {
-    console.log(`Placing trade with stake: ${stake} USD. Step: ${step}`);
+    console.log(`Placing trade v3 with stake: ${stake} USD. Step: ${step}`);
     console.log(`Stats wins: ${wins} losses:${loss}`);
     const tradeRequest = {
         buy: 1,
