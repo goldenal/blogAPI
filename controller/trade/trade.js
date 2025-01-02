@@ -5,7 +5,7 @@ const { socketConfig } = require('./socketConfig');
 
 
 //const API_TOKEN = '6qgA57lTScuQ5me';
-//              't2xQXkeeUW0IFEf'
+//              't2xQXkeeUW0IFEf'//li
 
 const instruments = ['R_10', 'R_25', 'R_50', 'R_75', 'R_100'];
 

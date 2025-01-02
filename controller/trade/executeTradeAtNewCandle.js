@@ -1,8 +1,9 @@
 const { manageListeners, sendRequest } = require("./listenerManager");
 const { placeMartingaleTrade } = require("./placeTradeAndcheckOutcome");
 const WebSocket = require('ws');
+const { API_TOKEN } = require("./socketConfig");
 
-const API_TOKEN = '6qgA57lTScuQ5me';
+
 
 
 
@@ -14,7 +15,7 @@ function executeTradeAtNewCandle(ws, symbol, type, res, amt, mode) {
     };
 
     ws.on('open', function open() {
-     
+
 
         // Authorize the connection
         sendRequest(ws, request);

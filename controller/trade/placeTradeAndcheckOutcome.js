@@ -1,14 +1,14 @@
 // Function to check if the trade is won or lost
 
 const { manageListeners, sendRequest } = require("./listenerManager");
-const { socketConfig } = require("./socketConfig");
+const { socketConfig, API_TOKEN } = require("./socketConfig");
 
 
 
 
 
 function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake) {
-    console.log('checkTradeOutcome block');
+    console.log(`checkTradeOutcome block with id ${contract_id}`);
     let standardWin = 5;
     let standardLoss = 4;
     const checkRequest = {
@@ -30,10 +30,11 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
 
         if (response.msg_type === 'proposal_open_contract') {
+            console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]));
             var isSold = response["proposal_open_contract"]["is_sold"];
             if (isSold != 1) {
-                //  console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]["is_sold"]));
-                console.log(parseFloat(response["proposal_open_contract"]["profit"]) > 0);
+                console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]["is_sold"]));
+                // console.log(parseFloat(response["proposal_open_contract"]));
                 if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
                     if ((wins + 1) < 5) {
                         console.log('Contract won, printing more');
@@ -161,31 +162,36 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
     console.log("subscribed for outcome");
     manageListeners(ws, 'message', tickStreamlistener);
 
+    ws.onclose = function (event) {
+        if (event.code === 1006) {
+            const websock = socketConfig();
+            websock.on('open', function open() {
+                const request = {
+                    authorize: API_TOKEN
+                };
+                // re Authorize the connection
+                sendRequest(ws, request);
+                ws.on('message', function incoming(data) {
+                    const response = JSON.parse(data);
 
-   
 
+                    // Check if authorization is successful
+                    if (response.msg_type === 'authorize') {
+                        console.log("reeeesubscribed for outcome.......<><><><><><><>");
+                        checkTradeOutcome(websock, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
 
+                    }
+                });
 
+            });
 
-
-
-}
-
-// Function to send a ping message every 30 seconds
-const startPing = (ws) => {
-    const pingInterval = 30000; // 30 seconds
-    const interval = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ ping: 1 }));
-            console.log('Ping sent to keep connection alive...................');
         }
-    }, pingInterval);
-    // Clear the interval when the connection is closed
-    ws.on('close', () => {
-        clearInterval(interval);
-        console.log('Connection closed, stopping ping.');
-    });
+    };
+
+
 }
+
+
 
 
 

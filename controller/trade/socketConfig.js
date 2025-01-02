@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const API_URL = 'wss://ws.derivws.com/websockets/v3?app_id=64155';
+const API_TOKEN = '6qgA57lTScuQ5me';
 
 function socketConfig() {
 
@@ -16,12 +17,29 @@ function socketConfig() {
     ws.onerror = function (error) {
         console.log(`[error] ${error.message}`); // Log the error that occurred
     };
+    startPing(ws);
     return ws;
 
 }
 
+// Function to send a ping message every 30 seconds
+const startPing = (ws) => {
+    const pingInterval = 30000; // 30 seconds
+    const interval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ ping: 1 }));
+            console.log('Ping sent to keep connection alive...................');
+        }
+    }, pingInterval);
+    // Clear the interval when the connection is closed
+    ws.on('close', () => {
+        clearInterval(interval);
+        console.log('Connection closed, stopping ping.');
+    });
+}
+
 module.exports = {
-    socketConfig
+    socketConfig, API_TOKEN
 
 }
 
