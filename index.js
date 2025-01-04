@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
-const mongoose = require('mongoose');
-const connectDB = require('./config/db_connection');
+//const mongoose = require('mongoose');
+//const connectDB = require('./config/db_connection');
 const functions = require("firebase-functions");
 
 const port = process.env.PORT || 8080;
@@ -38,4 +38,4 @@ app.use('/trade', require('./routes/trading_route'));
 app.listen(port, () => console.log(`Server running on port ${port}`));
 
 //module.exports = app;  for vercel deployment
-exports.api = functions.https.onRequest(app);
+//exports.api = functions.https.onRequest(app);
