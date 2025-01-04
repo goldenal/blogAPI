@@ -5,7 +5,7 @@ const app = express();
 //const connectDB = require('./config/db_connection');
 const functions = require("firebase-functions");
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3000;
 
 // Connect to MongoDB
 //connectDB();
