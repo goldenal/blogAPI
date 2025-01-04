@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const { sendRequest } = require('./listenerManager');
 const API_URL = 'wss://ws.derivws.com/websockets/v3?app_id=64155';
 const API_TOKEN = '6qgA57lTScuQ5me';
 
@@ -17,7 +18,7 @@ function socketConfig() {
     ws.onerror = function (error) {
         console.log(`[error] ${error.message}`); // Log the error that occurred
     };
-    startPing(ws);
+   // startPing(ws);
     return ws;
 
 }
@@ -38,8 +39,30 @@ const startPing = (ws) => {
     });
 }
 
+function openAndAutheticateSocket(ws, action){
+    ws.on('open', function open() {
+        const request = {
+            authorize: API_TOKEN
+        };
+        // re Authorize the connection
+        sendRequest(ws, request);
+        ws.on('message', function incoming(data) {
+            const response = JSON.parse(data);
+            
+            // Check if authorization is successful
+            if (response.msg_type === 'authorize') {
+                action;
+
+            }
+        });
+
+    });
+
+}
+
+
 module.exports = {
-    socketConfig, API_TOKEN
+    socketConfig, API_TOKEN,openAndAutheticateSocket
 
 }
 

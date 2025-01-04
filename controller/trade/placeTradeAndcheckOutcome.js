@@ -1,7 +1,7 @@
 // Function to check if the trade is won or lost
 
 const { manageListeners, sendRequest } = require("./listenerManager");
-const { socketConfig, API_TOKEN } = require("./socketConfig");
+const { socketConfig, API_TOKEN, openAndAutheticateSocket } = require("./socketConfig");
 
 
 
@@ -30,7 +30,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
 
         if (response.msg_type === 'proposal_open_contract') {
-            console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]));
+          //  console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]));
             var isSold = response["proposal_open_contract"]["is_sold"];
             if (isSold != 1) {
                 console.log('<><<<>> ' + JSON.stringify(response["proposal_open_contract"]["is_sold"]));
@@ -165,25 +165,28 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
     ws.onclose = function (event) {
         if (event.code === 1006) {
             const websock = socketConfig();
-            websock.on('open', function open() {
-                const request = {
-                    authorize: API_TOKEN
-                };
-                // re Authorize the connection
-                sendRequest(ws, request);
-                ws.on('message', function incoming(data) {
-                    const response = JSON.parse(data);
+          
+                websock.on('open', function open() {
+                    const myrequest = {
+                        authorize: API_TOKEN
+                    };
+                    // re Authorize the connection
+                    sendRequest(websock, myrequest);
 
 
-                    // Check if authorization is successful
-                    if (response.msg_type === 'authorize') {
-                        console.log("reeeesubscribed for outcome.......<><><><><><><>");
-                        checkTradeOutcome(websock, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
+                    websock.on('message', function incoming(data) {
+                        const response = JSON.parse(data);
 
-                    }
+                        // Check if authorization is successful
+                        if (response.msg_type === 'authorize') {
+                            console.log("reeeesubscribed for outcome.......<><><><><><><>");
+                            checkTradeOutcome(websock, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
+
+                        }
+                    });
+
                 });
-
-            });
+           
 
         }
     };
@@ -220,12 +223,35 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
         if (tradeResponse.msg_type === 'buy') {
             const contract_id = tradeResponse.buy.contract_id;
             console.log('Trade placed successfully. Contract ID:', contract_id);
+            ws.close(3001, "close socket to save resources 00000000000");
 
             // After placing the trade, start checking for the outcome
             setTimeout(() => {
-                checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
-                manageListeners(ws, 'message', handleTradeResponse, 'remove');
-            }, 3000);
+                const websock = socketConfig();
+                websock.on('open', function open() {
+                    const myrequest = {
+                        authorize: API_TOKEN
+                    };
+                    // re Authorize the connection
+                    sendRequest(websock, myrequest);
+
+
+                    websock.on('message', function incoming(data) {
+                        const response = JSON.parse(data);
+
+                        // Check if authorization is successful
+                        if (response.msg_type === 'authorize') {
+                            console.log("re-opened connection for tracking.......<><><><><><><>");
+                            checkTradeOutcome(websock, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
+
+                        }
+                    });
+
+                });
+
+
+                //  manageListeners(ws, 'message', handleTradeResponse, 'remove');
+            }, 240000);
 
         }
     };
