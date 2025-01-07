@@ -8,7 +8,7 @@ const { socketConfig, API_TOKEN, openAndAutheticateSocket } = require("./socketC
 
 
 function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake) {
-    console.log(`checkTradeOutcome block with id ${contract_id}`);
+    console.log(`checkTradeOutcome block with id ${contract_id} : ${symbol}`);
     let standardWin = 5;
     let standardLoss = 4;
     const checkRequest = {
@@ -37,13 +37,14 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
                 // console.log(parseFloat(response["proposal_open_contract"]));
                 if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
                     if ((wins + 1) < 5) {
-                        console.log('Contract won, printing more');
+                        console.log(`${symbol} Contract won, printing more`);
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, initialStake, res, step + 1, wins + 1, 0, initialStake);
                         manageListeners(ws, 'message', tickStreamlistener, 'remove');
                     } else {
 
                         ws.close(3001, "closed after max win<>");
+                        console.log( `${symbol} <>closed after max win<>`);
                     }
 
 
@@ -52,13 +53,15 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
                 } else {
                     var lossingStreak = loss + 1;
                     if ((lossingStreak) < 4) {
-                        console.log('Contract loss, recouping');
+                        console.log(`${symbol} Contract loss, recouping`);
                         manageListeners(ws, 'message', listener, 'remove');
                         placeMartingaleTrade(ws, symbol, type, stake * 2, res, step + 1, wins, lossingStreak, initialStake);
                         manageListeners(ws, 'message', tickStreamlistener, 'remove');
                     } else {
 
                         ws.close(3001, " closed after max loss<>");
+                        console.log( `${symbol} <>closed after max loss<>`);
+                        
                     }
 
 
@@ -67,7 +70,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
             }
             else {
-                console.log("isSold Section<<<>>>");
+                console.log(`isSold Section<<<>>> ${symbol}`);
 
                 if (response["proposal_open_contract"]["expiry_time"] === response["proposal_open_contract"]["exit_tick_time"]) {
                     if ((parseFloat(response["proposal_open_contract"]["profit"]) > 0)) {
@@ -79,6 +82,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
                         } else {
 
                             ws.close(3001, "closed after max win<>");
+                            console.log( `${symbol} <>closed after max win<>`);
                         }
 
 
@@ -94,6 +98,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
                         } else {
 
                             ws.close(3001, "closed after max loss<>");
+                            console.log( `${symbol} <>closed after max loss<>`);
                         }
 
 
@@ -101,7 +106,8 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
                 } else {
 
-                    ws.close(3001, "sold<>");
+                    ws.close(3001, `sold<> ${symbol}`);
+                    console.log( ` <>sold<> ${symbol}`);
                 }
 
 
@@ -131,7 +137,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
             const rem = (minutes + 1) % 5;
 
             if (seconds === 58) {
-                console.log(`${rem}  monitoring ..............`);
+                console.log(`${rem}  monitoring .............. ${symbol}`);
             }
 
             //  console.log('Tracking stream seconds:' + symbol, seconds);
@@ -159,7 +165,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
     //subscribe and listen to tick again
 
     sendRequest(ws, subscribeRequest);
-    console.log("subscribed for outcome");
+    console.log(`${symbol} subscribed for outcome `);
     manageListeners(ws, 'message', tickStreamlistener);
 
     ws.onclose = function (event) {
@@ -179,7 +185,7 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
                         // Check if authorization is successful
                         if (response.msg_type === 'authorize') {
-                            console.log("reeeesubscribed for outcome.......<><><><><><><>");
+                            console.log(`${symbol} reeeesubscribed for outcome.......<><><><><><><>`);
                             checkTradeOutcome(websock, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
 
                         }
