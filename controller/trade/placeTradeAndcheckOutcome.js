@@ -206,8 +206,8 @@ function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins
 
 // Function to place a Martingale trade
 function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, initialStake) {
-    console.log(`Placing trade v3 with stake: ${stake} USD. Step: ${step}`);
-    console.log(`Stats wins: ${wins} losses:${loss}`);
+    console.log(`${symbol} Placing trade v3 with stake: ${stake} USD. Step: ${step}`);
+    console.log(`${symbol} Stats wins: ${wins} losses:${loss}`);
     const tradeRequest = {
         buy: 1,
         price: stake,
@@ -228,7 +228,7 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
         const tradeResponse = JSON.parse(tradeData);
         if (tradeResponse.msg_type === 'buy') {
             const contract_id = tradeResponse.buy.contract_id;
-            console.log('Trade placed successfully. Contract ID:', contract_id);
+            console.log(`${symbol} Trade placed successfully. Contract ID:  ${contract_id}`);
             ws.close(3001, "close socket to save resources 00000000000");
 
             // After placing the trade, start checking for the outcome
@@ -247,7 +247,7 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
 
                         // Check if authorization is successful
                         if (response.msg_type === 'authorize') {
-                            console.log("re-opened connection for tracking.......<><><><><><><>");
+                            console.log(`${symbol} re-opened connection for tracking.......<><><><><><><>`);
                             checkTradeOutcome(websock, contract_id, symbol, stake, type, step, res, wins, loss, initialStake);
 
                         }
