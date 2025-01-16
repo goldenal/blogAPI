@@ -1,8 +1,8 @@
 const WebSocket = require('ws');
 const { sendRequest } = require('./listenerManager');
 const API_URL = 'wss://ws.derivws.com/websockets/v3?app_id=64155';
-const API_TOKEN = "6qgA57lTScuQ5me";
-//'t2xQXkeeUW0IFEf';
+const API_TOKEN = "t2xQXkeeUW0IFEf";
+//'t2xQXkeeUW0IFEf'; 6qgA57lTScuQ5me
 
 function socketConfig() {
 
