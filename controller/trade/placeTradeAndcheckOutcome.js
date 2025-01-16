@@ -9,7 +9,7 @@ const { socketConfig, API_TOKEN, openAndAutheticateSocket } = require("./socketC
 
 function checkTradeOutcome(ws, contract_id, symbol, stake, type, step, res, wins, loss, initialStake) {
     console.log(`checkTradeOutcome block with id ${contract_id} : ${symbol}`);
-    let standardWin = 1;
+    let standardWin = 5;
     let standardLoss = 4;
     const checkRequest = {
         proposal_open_contract: 1,
@@ -216,7 +216,7 @@ function placeMartingaleTrade(ws, symbol, type, stake, res, step, wins, loss, in
             basis: 'stake',
             contract_type: type, // 'CALL' for Up, 'PUT' for Down
             currency: 'USD',
-            duration: 25,
+            duration: 5,
             duration_unit: 'm',
             symbol: symbol
         }
