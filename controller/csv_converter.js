@@ -8,120 +8,120 @@ const { stringify } = require('csv-stringify');
 
 const convertFile = async (req, res) => {
 
-    function csvToFormattedString(filePath, outputFile) {
+    // function csvToFormattedString(filePath, outputFile) {
+    //     return new Promise((resolve, reject) => {
+    //         const results = [];
+
+    //         fs.createReadStream(filePath)
+    //             .pipe(parse({
+    //                 mapHeaders: ({ header }) => header.trim(),
+    //                 mapValues: ({ value }) => value.trim(),
+    //                 quote: '"',
+    //                 escape: '"'
+    //             }))
+    //             .on('data', (row) => {
+    //                 // console.log('Parsed Row:', row);
+    //                 results.push(row);
+    //             })
+    //             .on('end', () => {
+
+    //                 // Convert each row to the specified format
+    //                 const formattedRows = results.map((row) => {
+
+    //                     return `{
+    //       id: ${row[0]},
+    //       name: "${row[1]}",
+    //       address: "${row[2]}",
+    //       country: "${row[3]}"
+    //     }`;
+    //                 });
+
+    //                 // Join each formatted row with a comma and newline
+    //                 const outputString = `[\n  ${formattedRows.join(',\n  ')}\n]`;
+
+    //                 // Write the output string to a .txt file
+    //                 fs.writeFile(outputFile, outputString, (err) => {
+    //                     if (err) {
+    //                         reject(err);
+    //                     } else {
+    //                         resolve(`Output written to ${outputFile}`);
+    //                     }
+    //                 });
+    //             })
+    //             .on('error', (error) => {
+    //                 reject(error);
+    //             });
+    //     });
+    // }
+
+    // // Usage example
+    // csvToFormattedString('schools.csv', 'output.txt')
+    //     .then((message) => {
+    //         console.log(message);
+    //     })
+    //     .catch((error) => {
+    //         console.error("Error:", error);
+    //     });
+
+
+    // Function to read CSV file and return promise with parsed data
+    function readCSV(filePath, headers = true) {
         return new Promise((resolve, reject) => {
             const results = [];
-
             fs.createReadStream(filePath)
                 .pipe(parse({
-                    mapHeaders: ({ header }) => header.trim(),
-                    mapValues: ({ value }) => value.trim(),
-                    quote: '"',
-                    escape: '"'
+                    columns: headers,
+                    skip_empty_lines: true,
+                    trim: true
                 }))
-                .on('data', (row) => {
-                    // console.log('Parsed Row:', row);
-                    results.push(row);
-                })
-                .on('end', () => {
-
-                    // Convert each row to the specified format
-                    const formattedRows = results.map((row) => {
-
-                        return `{
-          id: ${row[0]},
-          name: "${row[1]}",
-          address: "${row[2]}",
-          country: "${row[3]}"
-        }`;
-                    });
-
-                    // Join each formatted row with a comma and newline
-                    const outputString = `[\n  ${formattedRows.join(',\n  ')}\n]`;
-
-                    // Write the output string to a .txt file
-                    fs.writeFile(outputFile, outputString, (err) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(`Output written to ${outputFile}`);
-                        }
-                    });
-                })
-                .on('error', (error) => {
-                    reject(error);
-                });
+                .on('data', (data) => results.push(data))
+                .on('end', () => resolve(results))
+                .on('error', reject);
         });
     }
 
-    // Usage example
-    csvToFormattedString('schools.csv', 'output.txt')
-        .then((message) => {
-            console.log(message);
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-        });
+    async function compareUniversities() {
+        try {
+            // Read both CSV files
+            const csv1Data = await readCSV('schools.csv');
+            const csv2Data = await readCSV('new.csv');
 
+            // Get all university names from csv1 (converted to lowercase for case-insensitive comparison)
+            const universities1 = new Set(
+                csv1Data.map(row => row.name.toLowerCase())
+            );
 
-    //    // Function to read CSV file and return promise with parsed data
-    //     function readCSV(filePath, headers = true) {
-    //         return new Promise((resolve, reject) => {
-    //             const results = [];
-    //             fs.createReadStream(filePath)
-    //                 .pipe(parse({
-    //                     columns: headers,
-    //                     skip_empty_lines: true,
-    //                     trim: true
-    //                 }))
-    //                 .on('data', (data) => results.push(data))
-    //                 .on('end', () => resolve(results))
-    //                 .on('error', reject);
-    //         });
-    //     }
+            // Filter universities from csv2 that don't exist in csv1
+            const uniqueUniversities = csv2Data
+                .filter(row => row.University && row.University.trim()) // Remove empty entries
+                .filter(row => !universities1.has(row.University.toLowerCase()))
+                .map(row => ({ University: row.University.trim() }));
 
-    //     async function compareUniversities() {
-    //         try {
-    //             // Read both CSV files
-    //             const csv1Data = await readCSV('schools.csv');
-    //             const csv2Data = await readCSV('ne.csv');
+            // Write results to new file
+            fs.writeFileSync(
+                'newfile.csv',
+                await new Promise((resolve, reject) => {
+                    stringify(uniqueUniversities, {
+                        header: true,
+                        columns: ['University']
+                    }, (err, output) => {
+                        if (err) reject(err);
+                        else resolve(output);
+                    });
+                })
+            );
 
-    //             // Get all university names from csv1 (converted to lowercase for case-insensitive comparison)
-    //             const universities1 = new Set(
-    //                 csv1Data.map(row => row.name.toLowerCase())
-    //             );
+            console.log(`Found ${uniqueUniversities.length} universities in csv2 that don't exist in csv1`);
+            console.log("Results have been saved to 'newfile.csv'");
 
-    //             // Filter universities from csv2 that don't exist in csv1
-    //             const uniqueUniversities = csv2Data
-    //                 .filter(row => row.University && row.University.trim()) // Remove empty entries
-    //                 .filter(row => !universities1.has(row.University.toLowerCase()))
-    //                 .map(row => ({ University: row.University.trim() }));
-
-    //             // Write results to new file
-    //             fs.writeFileSync(
-    //                 'newfile.csv',
-    //                 await new Promise((resolve, reject) => {
-    //                     stringify(uniqueUniversities, {
-    //                         header: true,
-    //                         columns: ['University']
-    //                     }, (err, output) => {
-    //                         if (err) reject(err);
-    //                         else resolve(output);
-    //                     });
-    //                 })
-    //             );
-
-    //             console.log(`Found ${uniqueUniversities.length} universities in csv2 that don't exist in csv1`);
-    //             console.log("Results have been saved to 'newfile.csv'");
-
-    //         } catch (error) {
-    //             console.error('Error processing CSV files:', error.message);
-    //         }
-    //     }
+        } catch (error) {
+            console.error('Error processing CSV files:', error.message);
+        }
+    }
 
 
 
-    //      compareUniversities();
+    compareUniversities();
 
 
 
